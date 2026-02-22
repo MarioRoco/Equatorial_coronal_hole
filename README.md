@@ -1,0 +1,1 @@
+# Equatorial Coronal Hole
