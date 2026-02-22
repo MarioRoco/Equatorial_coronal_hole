@@ -1,3 +1,4 @@
+*.npz
 previous_code/
 data/
 # Byte-compiled / optimized / DLL files
