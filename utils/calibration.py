@@ -463,3 +463,33 @@ class CalibrationParameters:
             pixelscale_intercept_list=np.array(self.pixelscale_intercept_list),
             pixelscale_intercept_unc_list=np.array(self.pixelscale_intercept_unc_list),
         )
+        print(f"Results saved to {output_path}")
+    
+    def load_results(self, output_path: str):
+        """
+        Load results from npz file.
+        
+        Parameters
+        ----------
+        output_path : str
+            Path to load results from (e.g., 'calibration_results.npz')
+        
+        Returns
+        -------
+        bool
+            True if successfully loaded, False otherwise
+        """
+        if not os.path.exists(output_path):
+            return False
+        
+        try:
+            data = np.load(output_path)
+            self.pixelscale_list = data['pixelscale_list'].tolist()
+            self.pixelscale_unc_list = data['pixelscale_unc_list'].tolist()
+            self.pixelscale_intercept_list = data['pixelscale_intercept_list'].tolist()
+            self.pixelscale_intercept_unc_list = data['pixelscale_intercept_unc_list'].tolist()
+            print(f"Results loaded from {output_path}")
+            return True
+        except Exception as e:
+            print(f"Could not load results from {output_path}: {e}")
+            return False

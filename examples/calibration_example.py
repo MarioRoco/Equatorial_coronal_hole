@@ -8,7 +8,8 @@ import sys
 import os
 sys.path.insert(0, os.path.abspath('..'))
 
-from utils.basic_operations import CalibrationParameters
+from utils.calibration import CalibrationParameters
+import glob
 
 
 def main():
@@ -16,9 +17,9 @@ def main():
     
     # Configuration parameters
     DATA_PATH = '/home/mario/Documents/MPS_PhD/Equatorial_coronal_hole/data/soho/sumer/'  # Path to SUMER FITS files
+    OUTPUT_PATH = '../output/calibration_results.npz'  # Where to save/load results
     
     # Get all FITS files from the directory (exclude Level 1 files)
-    import glob
     all_files = sorted(glob.glob(os.path.join(DATA_PATH, '*.fits')))
     SUMER_FILES = [os.path.basename(f) for f in all_files if '_l1.fits' not in f.lower()]
     
@@ -35,11 +36,28 @@ def main():
         rough_pixel_estimates=[178., 279., 316., 321.],
     )
     
-    # Compute calibration for specified rows
-    calibrator.compute_calibration(
-        data_path=DATA_PATH,
-        sumer_filename_list=SUMER_FILES,
-    )
+    # Check if results already exist and load them
+    print(f"\nChecking for existing calibration results at {OUTPUT_PATH}...")
+    if os.path.exists(OUTPUT_PATH):
+        print("Found existing results. Loading...")
+        if calibrator.load_results(OUTPUT_PATH):
+            print("✓ Results loaded successfully!")
+        else:
+            print("⚠ Failed to load results. Computing calibration...")
+            calibrator.compute_calibration(
+                data_path=DATA_PATH,
+                sumer_filename_list=SUMER_FILES,
+            )
+            calibrator.save_results(OUTPUT_PATH)
+    else:
+        print("No existing results found. Computing calibration...")
+        # Compute calibration for specified rows
+        calibrator.compute_calibration(
+            data_path=DATA_PATH,
+            sumer_filename_list=SUMER_FILES,
+        )
+        # Save results for future use
+        calibrator.save_results(OUTPUT_PATH)
     
     # Access results
     slopes, slopes_unc = calibrator.get_slopes()
